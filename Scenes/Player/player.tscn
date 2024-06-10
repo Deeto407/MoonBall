@@ -1,0 +1,89 @@
+[gd_scene load_steps=9 format=3 uid="uid://b02j2ye3eg27x"]
+
+[ext_resource type="Script" path="res://Scenes/Player/player.gd" id="1_6tjh1"]
+[ext_resource type="PackedScene" uid="uid://b3kn3ktk2yi5g" path="res://Scenes/Player/player_1_ghost.tscn" id="2_y3ukl"]
+[ext_resource type="Shader" path="res://Shaders/outline.gdshader" id="3_uso2f"]
+[ext_resource type="SpriteFrames" uid="uid://k360njfwm4ii" path="res://Scenes/Player/player_sprite_frames.tres" id="4_ynasq"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0vcre"]
+shader = ExtResource("3_uso2f")
+shader_parameter/thickness = 1.0
+shader_parameter/ring_count = 16
+shader_parameter/ring_offset = 0.0
+shader_parameter/outline_color = Color(0.611765, 0.65098, 0.0666667, 1)
+shader_parameter/border_clipping_fix = false
+shader_parameter/aspect_ratio = 1.0
+shader_parameter/square_border = false
+shader_parameter/offset = null
+shader_parameter/max_or_add = false
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dunpg"]
+radius = 5.0
+height = 13.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_i3ovx"]
+size = Vector2(14, 12)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1a6s7"]
+size = Vector2(14, 12)
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+z_index = 10
+material = SubResource("ShaderMaterial_0vcre")
+collision_layer = 8
+script = ExtResource("1_6tjh1")
+ghost_sprite = ExtResource("2_y3ukl")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+use_parent_material = true
+sprite_frames = ExtResource("4_ynasq")
+animation = &"dash"
+autoplay = "run"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+visible = false
+position = Vector2(0, 2.5)
+shape = SubResource("CapsuleShape2D_dunpg")
+
+[node name="Hurtbox" type="Area2D" parent="." groups=["player_hurtbox"]]
+collision_layer = 8
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, 2)
+shape = SubResource("RectangleShape2D_i3ovx")
+
+[node name="DashAttack" type="Area2D" parent="."]
+visible = false
+collision_layer = 0
+collision_mask = 8
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DashAttack"]
+position = Vector2(0, 2)
+shape = SubResource("RectangleShape2D_1a6s7")
+
+[node name="CoyoteTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="DashTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="DashCdTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="GhostTimer" type="Timer" parent="."]
+wait_time = 0.1
+
+[node name="StunTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="DodgeTimer" type="Timer" parent="."]
+one_shot = true
+
+[connection signal="area_entered" from="DashAttack" to="." method="_on_dash_attack_area_entered"]
+[connection signal="timeout" from="DashTimer" to="." method="_on_dash_timer_timeout"]
+[connection signal="timeout" from="DashCdTimer" to="." method="_on_dash_cd_timer_timeout"]
+[connection signal="timeout" from="GhostTimer" to="." method="_on_ghost_timer_timeout"]
+[connection signal="timeout" from="StunTimer" to="." method="_on_stun_timer_timeout"]
+[connection signal="timeout" from="DodgeTimer" to="." method="_on_dodge_timer_timeout"]

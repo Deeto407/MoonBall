@@ -1,0 +1,104 @@
+[gd_scene load_steps=10 format=3 uid="uid://ch736l85d10rw"]
+
+[ext_resource type="Material" uid="uid://b02o3g1b5p84k" path="res://Scenes/Player/red_outline.tres" id="1_d0jp6"]
+[ext_resource type="Script" path="res://Scenes/Player/multiplayer_player.gd" id="2_0gpxv"]
+[ext_resource type="SpriteFrames" uid="uid://k360njfwm4ii" path="res://Scenes/Player/player_sprite_frames.tres" id="2_ov0ka"]
+[ext_resource type="PackedScene" uid="uid://b3kn3ktk2yi5g" path="res://Scenes/Player/player_1_ghost.tscn" id="3_6xs2b"]
+[ext_resource type="PackedScene" uid="uid://sjyo60xy26mq" path="res://Scenes/Player/player_cam.tscn" id="4_mmnm8"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_afa8b"]
+radius = 5.0
+height = 13.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8oilj"]
+size = Vector2(14, 12)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vbc5l"]
+size = Vector2(14, 12)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_pab7b"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath("AnimatedSprite2D:flip_h")
+properties/1/spawn = true
+properties/1/replication_mode = 2
+properties/2/path = NodePath("AnimatedSprite2D:animation")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath("Hurtbox:monitorable")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath("DashAttack:monitoring")
+properties/4/spawn = true
+properties/4/replication_mode = 1
+properties/5/path = NodePath("AnimatedSprite2D:frame")
+properties/5/spawn = true
+properties/5/replication_mode = 1
+properties/6/path = NodePath(".:scale")
+properties/6/spawn = true
+properties/6/replication_mode = 2
+
+[node name="MultiplayerPlayer" type="CharacterBody2D" groups=["player"]]
+z_index = 10
+material = ExtResource("1_d0jp6")
+collision_layer = 8
+script = ExtResource("2_0gpxv")
+ghost_sprite = ExtResource("3_6xs2b")
+player_camera = ExtResource("4_mmnm8")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+use_parent_material = true
+sprite_frames = ExtResource("2_ov0ka")
+animation = &"stunned"
+
+[node name="CoyoteTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="DashTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="DashCdTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="GhostTimer" type="Timer" parent="."]
+wait_time = 0.1
+
+[node name="StunTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="DodgeTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+visible = false
+position = Vector2(0, 2.5)
+shape = SubResource("CapsuleShape2D_afa8b")
+
+[node name="Hurtbox" type="Area2D" parent="." groups=["player_hurtbox"]]
+collision_layer = 8
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, 2)
+shape = SubResource("RectangleShape2D_8oilj")
+
+[node name="DashAttack" type="Area2D" parent="."]
+visible = false
+collision_layer = 0
+collision_mask = 8
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DashAttack"]
+position = Vector2(0, 2)
+shape = SubResource("RectangleShape2D_vbc5l")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_pab7b")
+
+[connection signal="timeout" from="DashTimer" to="." method="_on_dash_timer_timeout"]
+[connection signal="timeout" from="DashCdTimer" to="." method="_on_dash_cd_timer_timeout"]
+[connection signal="timeout" from="GhostTimer" to="." method="_on_ghost_timer_timeout"]
+[connection signal="timeout" from="StunTimer" to="." method="_on_stun_timer_timeout"]
+[connection signal="timeout" from="DodgeTimer" to="." method="_on_dodge_timer_timeout"]
+[connection signal="area_entered" from="DashAttack" to="." method="_on_dash_attack_area_entered"]

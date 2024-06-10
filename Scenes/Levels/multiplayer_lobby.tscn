@@ -1,0 +1,86 @@
+[gd_scene load_steps=5 format=3 uid="uid://fcjeum1dc32k"]
+
+[ext_resource type="Script" path="res://Scenes/Levels/multiplayer_lobby.gd" id="1_5vuyg"]
+[ext_resource type="PackedScene" uid="uid://o24oqateyoho" path="res://Scenes/Levels/multiplayer_scene.tscn" id="2_h7slc"]
+[ext_resource type="PackedScene" uid="uid://ebd1ember0va" path="res://Scenes/UI/WinScreen/online_win_screen.tscn" id="3_34xvx"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_0ugar"]
+font_size = 64
+
+[node name="MultiplayerLobby" type="Node" groups=["multiplayer_lobby"]]
+script = ExtResource("1_5vuyg")
+level_scene = ExtResource("2_h7slc")
+win_screen = ExtResource("3_34xvx")
+
+[node name="Level" type="Node" parent="."]
+
+[node name="LevelSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://Scenes/Levels/multiplayer_scene.tscn")
+spawn_path = NodePath("../Level")
+spawn_limit = 1
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="NotConnectedHBox" type="HBoxContainer" parent="UI"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 720.0
+offset_bottom = 62.0
+
+[node name="BackButton" type="Button" parent="UI/NotConnectedHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Back"
+
+[node name="HostButton" type="Button" parent="UI/NotConnectedHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Host"
+
+[node name="JoinButton" type="Button" parent="UI/NotConnectedHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Join"
+
+[node name="IPLineEdit" type="LineEdit" parent="UI/NotConnectedHBox"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+text = "127.0.0.1"
+placeholder_text = "Enter IP Address"
+
+[node name="HostHBox" type="HBoxContainer" parent="UI"]
+visible = false
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 315.0
+offset_bottom = 62.0
+
+[node name="StartButton" type="Button" parent="UI/HostHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Start"
+
+[node name="StatusLabel" type="Label" parent="UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Host or Join"
+label_settings = SubResource("LabelSettings_0ugar")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="UI/NotConnectedHBox/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="UI/NotConnectedHBox/HostButton" to="." method="_on_host_button_pressed"]
+[connection signal="pressed" from="UI/NotConnectedHBox/JoinButton" to="." method="_on_join_button_pressed"]
+[connection signal="pressed" from="UI/HostHBox/StartButton" to="." method="_on_start_button_pressed"]

@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://uwwi7t2e0p8y"]
+
+[ext_resource type="Script" path="res://Scenes/Ball/ball.gd" id="1_3qccu"]
+[ext_resource type="Texture2D" uid="uid://dyusj4me0jfce" path="res://Assets/Kenney1Bit/Tiles/Transparent/tile_0014.png" id="1_hn6ty"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_3x24r"]
+friction = 0.0
+bounce = 1.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_4eksf"]
+radius = 9.0
+
+[node name="Ball" type="RigidBody2D" groups=["ball"]]
+collision_layer = 2
+collision_mask = 9
+physics_material_override = SubResource("PhysicsMaterial_3x24r")
+gravity_scale = 0.0
+max_contacts_reported = 7
+contact_monitor = true
+linear_damp = 0.3
+script = ExtResource("1_3qccu")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_hn6ty")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_4eksf")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

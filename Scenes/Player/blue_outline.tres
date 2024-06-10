@@ -1,0 +1,15 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://clfw8yj5ucvgh"]
+
+[ext_resource type="Shader" path="res://Shaders/outline.gdshader" id="1_bg768"]
+
+[resource]
+shader = ExtResource("1_bg768")
+shader_parameter/thickness = 1.0
+shader_parameter/ring_count = 16
+shader_parameter/ring_offset = 0.0
+shader_parameter/outline_color = Color(0, 0.317647, 1, 1)
+shader_parameter/border_clipping_fix = false
+shader_parameter/aspect_ratio = 1.0
+shader_parameter/square_border = false
+shader_parameter/offset = null
+shader_parameter/max_or_add = false

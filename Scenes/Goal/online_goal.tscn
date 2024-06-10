@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://dasjpwa3ijgmc"]
+
+[ext_resource type="Script" path="res://Scenes/Goal/online_goal.gd" id="1_n82i4"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2lwfb"]
+size = Vector2(61, 96)
+
+[node name="OnlineGoal" type="Area2D"]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_n82i4")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0.5, -3)
+shape = SubResource("RectangleShape2D_2lwfb")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

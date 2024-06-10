@@ -1,0 +1,59 @@
+[gd_scene load_steps=4 format=3 uid="uid://cktuxijyhnt20"]
+
+[ext_resource type="Script" path="res://Scenes/UI/WinScreen/WinScreen.gd" id="1_1ty2s"]
+[ext_resource type="Texture2D" uid="uid://bwqj4btulhia6" path="res://Assets/Characters/Player1/tile_0240.png" id="2_w3ajq"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_r6ps1"]
+font_size = 72
+outline_size = 10
+outline_color = Color(0.0666667, 0, 1, 1)
+
+[node name="WinScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1ty2s")
+metadata/_edit_horizontal_guides_ = [70.0]
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+
+[node name="WinLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Win Text"
+label_settings = SubResource("LabelSettings_r6ps1")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CharacterTexture" type="TextureRect" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("2_w3ajq")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="PlayAgainButton" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Play Again"
+
+[node name="MainMenuButton" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Main Menu"
+
+[connection signal="pressed" from="CenterContainer/VBoxContainer/HBoxContainer/PlayAgainButton" to="." method="_on_play_again_button_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/HBoxContainer/MainMenuButton" to="." method="_on_main_menu_button_pressed"]

@@ -49,6 +49,6 @@ func _on_connected_to_server():
 	status_label.text = "Connected!"
 	
 
-@rpc("authority", "call_local", "reliable")
+@rpc("any_peer", "call_local", "reliable")
 func hide_menu():
 	lobby_ui.hide()

@@ -18,6 +18,7 @@ func _ready() -> void:
 	OnlineGameManager.start_round.call_deferred()
 	
 	if not multiplayer.is_server():
+		print('no server')
 		return
 	
 	multiplayer.peer_disconnected.connect(delete_player)

@@ -20,7 +20,7 @@ func set_starting_positions():
 		elif n.player_id == 2:
 			blue_player_starting_position = n.global_position
 	ball_starting_position = get_tree().get_first_node_in_group("ball").global_position
-	
+
 func goal_scored(goal_id):
 	var lobby = get_tree().get_first_node_in_group("multiplayer_lobby")
 	if goal_id == 1:
@@ -41,6 +41,8 @@ func reset_positions():
 	for n in players_in_game:
 		n.dashing = false
 		n.velocity = Vector2.ZERO
+		n.is_stunned = false
+		n.dodging = false
 		if n.player_id == 1:
 			n.global_position = red_player_starting_position
 		elif n.player_id == 2:
@@ -76,7 +78,6 @@ func end_regulation():
 		lobby.change_level.call_deferred(lobby.win_screen)
 		reset_game.call_deferred()
 	elif team_left_score == team_right_score:
-		print("overtime time")
 		is_overtime = true
 		reset_positions()
 		start_round()

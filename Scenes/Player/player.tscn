@@ -30,6 +30,7 @@ size = Vector2(14, 12)
 [node name="Player" type="CharacterBody2D" groups=["player"]]
 z_index = 10
 material = SubResource("ShaderMaterial_0vcre")
+scale = Vector2(1.25, 1.25)
 collision_layer = 8
 script = ExtResource("1_6tjh1")
 ghost_sprite = ExtResource("2_y3ukl")

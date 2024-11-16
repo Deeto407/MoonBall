@@ -7,16 +7,16 @@
 friction = 0.0
 bounce = 1.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_4eksf"]
-radius = 9.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_fjxw8"]
 
 [node name="Ball" type="RigidBody2D" groups=["ball"]]
 collision_layer = 2
 collision_mask = 9
 physics_material_override = SubResource("PhysicsMaterial_3x24r")
-gravity_scale = 0.0
+gravity_scale = 0.15
 max_contacts_reported = 7
 contact_monitor = true
+linear_velocity = Vector2(0, 75)
 linear_damp = 0.3
 script = ExtResource("1_3qccu")
 
@@ -24,6 +24,6 @@ script = ExtResource("1_3qccu")
 texture = ExtResource("1_hn6ty")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_4eksf")
+shape = SubResource("CircleShape2D_fjxw8")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

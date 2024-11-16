@@ -40,6 +40,8 @@ func reset_positions():
 	for n in players_in_game:
 		n.dashing = false
 		n.velocity = Vector2.ZERO
+		n.is_stunned = false
+		n.dodging = false
 		if n.player_id == 1:
 			n.global_position = red_player_starting_position
 		elif n.player_id == 2:

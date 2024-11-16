@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://fcjeum1dc32k"]
+[gd_scene load_steps=6 format=3 uid="uid://fcjeum1dc32k"]
 
 [ext_resource type="Script" path="res://Scenes/Levels/multiplayer_lobby.gd" id="1_5vuyg"]
 [ext_resource type="PackedScene" uid="uid://o24oqateyoho" path="res://Scenes/Levels/multiplayer_scene.tscn" id="2_h7slc"]
@@ -6,6 +6,9 @@
 
 [sub_resource type="LabelSettings" id="LabelSettings_0ugar"]
 font_size = 64
+
+[sub_resource type="LabelSettings" id="LabelSettings_pjgs8"]
+font_size = 32
 
 [node name="MultiplayerLobby" type="Node" groups=["multiplayer_lobby"]]
 script = ExtResource("1_5vuyg")
@@ -68,17 +71,32 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Start"
 
-[node name="StatusLabel" type="Label" parent="UI"]
+[node name="ConnectionsBox" type="VBoxContainer" parent="UI"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="StatusLabel" type="Label" parent="UI/ConnectionsBox"]
+layout_mode = 2
 text = "Host or Join"
 label_settings = SubResource("LabelSettings_0ugar")
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="ConnectionsMessage" type="Label" parent="UI/ConnectionsBox"]
+visible = false
+layout_mode = 2
+text = "no players connected..."
+label_settings = SubResource("LabelSettings_pjgs8")
 
 [connection signal="pressed" from="UI/NotConnectedHBox/BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="pressed" from="UI/NotConnectedHBox/HostButton" to="." method="_on_host_button_pressed"]

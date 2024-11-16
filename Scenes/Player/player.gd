@@ -1,11 +1,11 @@
 extends CharacterBody2D
 class_name Player
 
-const STUN_TIME := 1.0
+const STUN_TIME := 2.0
 const KNOCKBACK_POWER := 150.0
 
 @export var speed := 200.0
-@export var dodge_speed := 100.0
+@export var dodge_speed := 225.0
 @export var dodge_time := 0.5 
 @export var dash_speed := 600.0
 @export var dash_time := 0.2
@@ -20,7 +20,7 @@ const KNOCKBACK_POWER := 150.0
 
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var gravity: int = ProjectSettings.get_setting("physics/2d/default_gravity")
-var jump_available := true
+var can_jump := true
 var jump_count := 0
 var can_dash := true
 var dashing := false
@@ -41,109 +41,154 @@ var dodge_count := 0
 @onready var dodge_timer: Timer = $DodgeTimer
 @onready var hurtbox: Area2D = $Hurtbox
 
+var state = PlayerState.IDLE
 
+enum PlayerState {
+	IDLE,
+	WALKING,
+	JUMPING,
+	FALLING,
+	DODGING,
+	DASHING,
+	STUNNED,
+}
 
 func _ready() -> void:
 	material.set_shader_parameter("outline_color", outline_color)
+
 func _physics_process(delta: float) -> void:
 	var direction := Input.get_axis("move_left_%s" % [player_id], "move_right_%s" % [player_id])
+	if !dashing and !is_stunned and !dodging :
+		velocity.x = direction * speed
+	
+	#determine gravity
+	if is_on_wall() and velocity.y >= 0.0:
+		velocity.y += (gravity / 6.0) * delta
+	elif !dodging: 
+		velocity.y += gravity * delta
+	
+	if dodging:
+		velocity.x = dodge_direction.x * dodge_speed
+		velocity.y += (gravity / 20.0) * delta
+	elif dashing:
+		velocity = dash_direction * dash_speed
+		
+	handle_movement_and_animations(delta)
+	move_and_slide()
+
+func handle_movement_and_animations(delta):
 	var aerial_direction := Input.get_vector(
 		"move_left_%s" % [player_id], "move_right_%s" % [player_id], "aim_up_%s" % [player_id], "aim_down_%s" % [player_id]
 		)
 	
+	if jump_count >= max_jumps:
+		can_jump = false
+	else: 
+		can_jump = true
 	
-	var is_falling = velocity.y > 0.0 and not (is_on_floor() or is_on_wall())
-	var is_dodging = Input.is_action_just_pressed("dodge_%s" % [player_id]) and can_dodge
-	var is_jumping = Input.is_action_just_pressed("jump_%s" % [player_id]) and (is_on_floor() or is_on_wall())
-	var is_dashing = Input.is_action_just_pressed("dash_%s" % [player_id]) and can_dash
-	var is_jump_cancelled = Input.is_action_just_released("jump_%s" % [player_id]) and velocity.y < 0.0
-	var is_idle = is_zero_approx(velocity.x) and is_on_floor()
-	var is_running = not is_zero_approx(velocity.x) and is_on_floor()
-	
-	if not can_dash:
-		if dash_cd_timer.is_stopped() and (is_on_floor() or is_on_wall()):
-			can_dash = true
-	if not can_dodge:
-		if dodge_timer.is_stopped() and (is_on_floor() or is_on_wall()):
-			can_dodge = true
-			dodge_count = 0
-			
-	if !dashing and !is_stunned and !dodging :
-		velocity.x = direction * speed
-		if is_on_wall() and velocity.y >= 0.0:
-			velocity.y += (gravity / 6) * delta
-		else: 
-			velocity.y += gravity * delta
-	
-	if is_dodging and not is_stunned:
-		dodge_direction = aerial_direction
-		start_dodge()
-	elif is_dashing and not is_stunned and not dodging:
-		dash_direction = aerial_direction
-		start_dash()
-	elif is_jumping and not is_stunned:
-		velocity.y += jump_velocity
-	elif is_jump_cancelled and not is_stunned:
-		velocity.y = 0.0
-	if dodging:
-		velocity.x = dodge_direction.x * dodge_speed
-		velocity.y += (gravity / 20) * delta
-	elif dashing:
-		velocity = dash_direction * dash_speed
-	
-	move_and_slide()
-	
+	# Decide State
 	if is_stunned:
-		anim_sprite.play("stunned")
-	elif dodging:
-		anim_sprite.play("dash")
-	elif dashing:
-		anim_sprite.play("dash")
-	elif is_falling:
-		anim_sprite.play("falling")
-	elif is_jumping:
-		anim_sprite.play("jump")
-	elif is_running:
-		anim_sprite.play("run")
-	elif is_idle:
-		anim_sprite.play("idle")
+		state = PlayerState.STUNNED
+	elif Input.is_action_just_pressed("jump_%s" % [player_id]) and can_jump:
+		state = PlayerState.JUMPING
+		jump_count += 1
+	elif Input.is_action_just_pressed("dodge_%s" % [player_id]) and can_dodge:
+		state = PlayerState.DODGING
+	elif Input.is_action_just_pressed("dash_%s" % [player_id]) and can_dash:
+		state = PlayerState.DASHING
+	elif is_zero_approx(velocity.x) and is_on_floor():
+		state = PlayerState.IDLE
+	elif not is_zero_approx(velocity.x) and is_on_floor():
+		state = PlayerState.WALKING
+	elif not dodging and not dashing:
+		state = PlayerState.FALLING
 	
+	
+	# Process State
+	match state:
+		PlayerState.IDLE:
+			anim_sprite.play("idle")
+			jump_count = 0
+			if dash_cd_timer.is_stopped() and (is_on_floor() or is_on_wall()):
+				can_dash = true
+			if dodge_timer.is_stopped() and (is_on_floor() or is_on_wall()):
+				can_dodge = true
+				dodge_count = 0
+		PlayerState.WALKING:
+			jump_count = 0
+			anim_sprite.play("run")
+			if dash_cd_timer.is_stopped() and (is_on_floor() or is_on_wall()):
+				can_dash = true
+			if dodge_timer.is_stopped() and (is_on_floor() or is_on_wall()):
+				can_dodge = true
+				dodge_count = 0
+		PlayerState.JUMPING:
+			anim_sprite.play("jump")
+			velocity.y = jump_velocity
+		PlayerState.FALLING:
+			anim_sprite.play("falling")
+			if is_on_floor() or is_on_wall():
+				jump_count = 0
+			if dash_cd_timer.is_stopped() and (is_on_floor() or is_on_wall()):
+				can_dash = true
+			if dodge_timer.is_stopped() and (is_on_floor() or is_on_wall()):
+				can_dodge = true
+				dodge_count = 0
+		PlayerState.DODGING:
+			anim_sprite.play("dash")
+			dodge_direction = aerial_direction
+			start_dodge()
+		PlayerState.DASHING:
+			anim_sprite.play("dash")
+			if !dashing:
+				dash_direction = aerial_direction
+			start_dash()
+		PlayerState.STUNNED:
+			anim_sprite.play("stunned")
+	
+	# Jump Cancel
+	if Input.is_action_just_released("jump") and velocity.y < 0.0:
+		if not is_stunned:
+			velocity.y = 0.0
+	
+	# Sprite Direction
 	if not is_zero_approx(velocity.x):
 		if velocity.x < 0:
 			anim_sprite.flip_h = true
 		else:
 			anim_sprite.flip_h = false
-	
+			
 func stun_knockback():
 	if anim_sprite.flip_h:
-		velocity.x = KNOCKBACK_POWER
+		velocity.x += KNOCKBACK_POWER
 	else:
-		velocity.x = -KNOCKBACK_POWER
+		velocity.x += -KNOCKBACK_POWER
 		
 func start_dodge():
-	
-	dodging = true
-	can_dodge = false
-	dodge_count += 1
-	hurtbox.monitorable = false
-	scale = Vector2(.75,.75)
-	var tween = get_tree().create_tween()
-	tween.tween_method(set_shader_value, 1.0, 3.0, .33)
-	dodge_timer.start(dodge_time)
-	if velocity.y > 0:
-		velocity.y = 0.0
+	if dodging == false:
+		dodging = true
+		can_dodge = false
+		dodge_count += 1
+		hurtbox.set_deferred("monitorable", false)
+		scale = Vector2(.75,.75)
+		var tween = get_tree().create_tween()
+		tween.tween_method(set_shader_value, 1.0, 3.0, .33)
+		dodge_timer.start(dodge_time)
+		if velocity.y > 0:
+			velocity.y = 0.0
 	
 func set_shader_value(value: float):
 	material.set_shader_parameter("aspect_ratio", value)
 	
 func start_dash():
-	dashing = true
-	can_dash = false
-	dash_attack.monitoring = true
-	dash_timer.start(dash_time)
-	dash_cd_timer.start(dash_cooldown)
-	ghost_timer.start(.05)
-	add_ghost()
+	if dashing == false:
+		dashing = true
+		can_dash = false
+		dash_attack.monitoring = true
+		dash_timer.start(dash_time)
+		dash_cd_timer.start(dash_cooldown)
+		ghost_timer.start(.05)
+		add_ghost()
 	
 func add_ghost():
 	var ghost = ghost_sprite.instantiate()
@@ -154,7 +199,7 @@ func add_ghost():
 
 func get_stunned():
 	is_stunned = true
-	hurtbox.monitorable = false
+	hurtbox.set_deferred("monitorable", false)
 	stun_knockback()
 	stun_timer.start(STUN_TIME)
 
@@ -163,6 +208,7 @@ func _on_dash_timer_timeout() -> void:
 	dashing = false
 	dash_attack.monitoring = false
 	ghost_timer.stop()
+	print(dashing)
 
 
 func _on_dash_cd_timer_timeout() -> void:
@@ -175,7 +221,7 @@ func _on_ghost_timer_timeout() -> void:
 
 func _on_stun_timer_timeout() -> void:
 	is_stunned = false
-	hurtbox.monitorable = true
+	hurtbox.set_deferred("monitorable", true)
 
 func _on_dash_attack_area_entered(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox") and area != self.hurtbox:
@@ -184,8 +230,8 @@ func _on_dash_attack_area_entered(area: Area2D) -> void:
 
 func _on_dodge_timer_timeout() -> void:
 	dodging = false
-	hurtbox.monitorable = true
-	scale = Vector2(1,1)
+	hurtbox.set_deferred("monitorable", true)
+	scale = Vector2(1.25,1.25)
 	set_shader_value(1.0)
 	if dodge_count < max_dodges:
 		can_dodge = true

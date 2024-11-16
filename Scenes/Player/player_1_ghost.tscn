@@ -6,5 +6,6 @@
 [node name="Player1Ghost" type="Sprite2D"]
 modulate = Color(0.54902, 0.54902, 0.54902, 1)
 show_behind_parent = true
+scale = Vector2(1.25, 1.25)
 texture = ExtResource("1_gisbx")
 script = ExtResource("1_nen35")

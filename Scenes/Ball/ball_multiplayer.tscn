@@ -7,8 +7,7 @@
 friction = 0.0
 bounce = 1.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_4eksf"]
-radius = 9.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_fjxw8"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_xyc2d"]
 properties/0/path = NodePath(".:modulate")
@@ -17,10 +16,10 @@ properties/0/replication_mode = 2
 properties/1/path = NodePath(".:current_possesion")
 properties/1/spawn = true
 properties/1/replication_mode = 2
-properties/2/path = NodePath(".:position")
+properties/2/path = NodePath(".:replicated_position")
 properties/2/spawn = true
 properties/2/replication_mode = 1
-properties/3/path = NodePath(".:linear_velocity")
+properties/3/path = NodePath(".:replicated_linear_velocity")
 properties/3/spawn = true
 properties/3/replication_mode = 1
 
@@ -28,7 +27,7 @@ properties/3/replication_mode = 1
 collision_layer = 2
 collision_mask = 9
 physics_material_override = SubResource("PhysicsMaterial_3x24r")
-gravity_scale = 0.0
+gravity_scale = 0.15
 lock_rotation = true
 max_contacts_reported = 7
 contact_monitor = true
@@ -40,7 +39,7 @@ script = ExtResource("1_orqli")
 texture = ExtResource("2_iue6c")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_4eksf")
+shape = SubResource("CircleShape2D_fjxw8")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_xyc2d")

@@ -1,8 +1,10 @@
-[gd_scene load_steps=22 format=3 uid="uid://0bv505n1spi4"]
+[gd_scene load_steps=26 format=3 uid="uid://0bv505n1spi4"]
 
 [ext_resource type="Script" path="res://Scripts/world.gd" id="1_tq5ry"]
 [ext_resource type="TileSet" uid="uid://cikowk7rols56" path="res://Assets/TileSets/map_1.tres" id="2_5x8vx"]
 [ext_resource type="PackedScene" uid="uid://b02j2ye3eg27x" path="res://Scenes/Player/player.tscn" id="2_85xt2"]
+[ext_resource type="Material" uid="uid://d2puph3wg5odr" path="res://Materials/red_god_ray.tres" id="2_pu2yt"]
+[ext_resource type="Material" uid="uid://b0v37fho4wy7q" path="res://Materials/blue_god_ray.tres" id="3_c040v"]
 [ext_resource type="Shader" path="res://Shaders/outline.gdshader" id="3_eava6"]
 [ext_resource type="PackedScene" uid="uid://uwwi7t2e0p8y" path="res://Scenes/Ball/ball.tscn" id="4_kxiuf"]
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_2d.gd" id="5_yj7kd"]
@@ -10,6 +12,8 @@
 [ext_resource type="Script" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="7_3j1oa"]
 [ext_resource type="PackedScene" uid="uid://duhvfmssvy5ff" path="res://Scenes/Goal/goal.tscn" id="8_0iqmj"]
 [ext_resource type="Script" path="res://Scripts/GameUI.gd" id="10_kylfm"]
+[ext_resource type="Material" uid="uid://bnsj2qourju4q" path="res://Materials/blue_goal.tres" id="12_odtry"]
+[ext_resource type="Material" uid="uid://cnmxb6gqvxu6j" path="res://Materials/red_goal.tres" id="13_37p3d"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_y16si"]
 shader = ExtResource("3_eava6")
@@ -264,6 +268,24 @@ _data = {
 position = Vector2(-385, -673)
 script = ExtResource("1_tq5ry")
 
+[node name="RedGodRay" type="ColorRect" parent="." groups=["red_god_ray"]]
+visible = false
+material = ExtResource("2_pu2yt")
+offset_left = -150.0
+offset_top = 37.0
+offset_right = 918.0
+offset_bottom = 491.0
+mouse_filter = 2
+
+[node name="BlueGodRay" type="ColorRect" parent="." groups=["blue_god_ray"]]
+visible = false
+material = ExtResource("3_c040v")
+offset_left = -143.0
+offset_top = 37.0
+offset_right = 948.0
+offset_bottom = 491.0
+mouse_filter = 2
+
 [node name="TileMap1" type="TileMap" parent="."]
 tile_set = ExtResource("2_5x8vx")
 format = 2
@@ -283,7 +305,6 @@ outline_color = Color(0.141176, 0.117647, 0.890196, 1)
 
 [node name="Ball" parent="." instance=ExtResource("4_kxiuf")]
 position = Vector2(392, 194)
-linear_velocity = Vector2(0, 75)
 
 [node name="PhantomCamera2D" type="Node2D" parent="." node_paths=PackedStringArray("follow_targets")]
 process_mode = 3
@@ -291,7 +312,7 @@ position = Vector2(402.5, 306)
 script = ExtResource("5_yj7kd")
 follow_mode = 3
 follow_targets = [NodePath("../Ball"), NodePath("../Player"), NodePath("../Player2")]
-zoom = Vector2(1.35, 1.35)
+zoom = Vector2(0.00208986, 0.00208986)
 snap_to_pixel = true
 tween_resource = SubResource("Resource_7wui1")
 auto_zoom = true
@@ -302,7 +323,7 @@ auto_zoom_margin = Vector4(20, 20, 20, 20)
 [node name="Camera2D" type="Camera2D" parent="."]
 process_mode = 3
 position = Vector2(403, 306)
-zoom = Vector2(1.35, 1.35)
+zoom = Vector2(0.00208986, 0.00208986)
 process_callback = 0
 position_smoothing_speed = 20.0
 drag_horizontal_enabled = true
@@ -319,12 +340,16 @@ collision_mask = 0
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D"]
 polygon = PackedVector2Array(-129, 675, 1153, 672, 1151, 0, 848, -2, -64, 2, -64, 80, 848, 80, 848, 320, 912, 320, 912, 416, 848, 416, 848, 448, 465, 448, 464, 288, 320, 288, 320, 448, -64, 448, -64, 416, -128, 416, -128, 320, -64, 320, -64, 2, -480, -1, -482, 478, -399, 671)
 
-[node name="Goal" parent="." instance=ExtResource("8_0iqmj")]
+[node name="Goal" parent="." node_paths=PackedStringArray("ball") instance=ExtResource("8_0iqmj")]
 position = Vector2(-98, 371)
+ball = NodePath("../Ball")
+shader = ExtResource("12_odtry")
 
-[node name="Goal2" parent="." instance=ExtResource("8_0iqmj")]
+[node name="Goal2" parent="." node_paths=PackedStringArray("ball") instance=ExtResource("8_0iqmj")]
 position = Vector2(881, 371)
 goal_id = 2
+ball = NodePath("../Ball")
+shader = ExtResource("13_37p3d")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 

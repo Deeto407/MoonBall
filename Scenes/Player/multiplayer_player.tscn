@@ -1,9 +1,9 @@
 [gd_scene load_steps=10 format=3 uid="uid://ch736l85d10rw"]
 
-[ext_resource type="Material" uid="uid://b02o3g1b5p84k" path="res://Scenes/Player/red_outline.tres" id="1_d0jp6"]
 [ext_resource type="Script" path="res://Scenes/Player/multiplayer_player.gd" id="2_0gpxv"]
 [ext_resource type="SpriteFrames" uid="uid://k360njfwm4ii" path="res://Scenes/Player/player_sprite_frames.tres" id="2_ov0ka"]
 [ext_resource type="PackedScene" uid="uid://b3kn3ktk2yi5g" path="res://Scenes/Player/player_1_ghost.tscn" id="3_6xs2b"]
+[ext_resource type="Material" uid="uid://dbjcmegdfuw3e" path="res://Materials/my_player_outline.tres" id="4_k7vil"]
 [ext_resource type="PackedScene" uid="uid://sjyo60xy26mq" path="res://Scenes/Player/player_cam.tscn" id="4_mmnm8"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_afa8b"]
@@ -41,16 +41,17 @@ properties/6/replication_mode = 2
 
 [node name="MultiplayerPlayer" type="CharacterBody2D" groups=["player"]]
 z_index = 10
-material = ExtResource("1_d0jp6")
+scale = Vector2(1.25, 1.25)
 collision_layer = 8
 script = ExtResource("2_0gpxv")
 ghost_sprite = ExtResource("3_6xs2b")
 player_camera = ExtResource("4_mmnm8")
+my_outline_shader = ExtResource("4_k7vil")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 use_parent_material = true
 sprite_frames = ExtResource("2_ov0ka")
-animation = &"stunned"
+animation = &"falling"
 
 [node name="CoyoteTimer" type="Timer" parent="."]
 one_shot = true
@@ -71,7 +72,6 @@ one_shot = true
 one_shot = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
 position = Vector2(0, 2.5)
 shape = SubResource("CapsuleShape2D_afa8b")
 
@@ -80,6 +80,7 @@ collision_layer = 8
 collision_mask = 8
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+visible = false
 position = Vector2(0, 2)
 shape = SubResource("RectangleShape2D_8oilj")
 

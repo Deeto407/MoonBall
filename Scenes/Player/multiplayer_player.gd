@@ -1,11 +1,12 @@
 extends CharacterBody2D
 class_name OnlinePlayer
 
-const STUN_TIME := 1.0
+const STUN_TIME := 2.0
 const KNOCKBACK_POWER := 150.0
+
 @export_category("Stats")
 @export var speed := 200.0
-@export var dodge_speed := 100.0
+@export var dodge_speed := 225.0
 @export var dodge_time := 0.5 
 @export var dash_speed := 600.0
 @export var dash_time := 0.2
@@ -20,11 +21,13 @@ const KNOCKBACK_POWER := 150.0
 @export var player_camera : PackedScene
 @export var player_id := 1
 @export var outline_color: Color
+@export var my_outline_shader: ShaderMaterial
 var outline_shader: ShaderMaterial
-
+var god_ray_shader: ShaderMaterial
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var gravity: int = ProjectSettings.get_setting("physics/2d/default_gravity")
-var jump_available := true
+
+var can_jump := true
 var jump_count := 0
 var can_dash := true
 var dashing := false
@@ -67,7 +70,10 @@ func _ready() -> void:
 	phantom_cam.append_follow_targets(self)
 	
 	material = outline_shader
+	print("player id: " + str(player_id))
 	
+	#if owner_id == multiplayer.get_unique_id():
+		#material = my_outline_shader
 
 
 func _physics_process(delta: float) -> void:
@@ -79,10 +85,12 @@ func _physics_process(delta: float) -> void:
 	
 	if !dashing and !is_stunned and !dodging :
 		velocity.x = direction * speed
-		if is_on_wall() and velocity.y >= 0.0:
-			velocity.y += (gravity / 6.0) * delta
-		else: 
-			velocity.y += gravity * delta
+	
+	#determine gravity
+	if is_on_wall() and velocity.y >= 0.0:
+		velocity.y += (gravity / 6.0) * delta
+	elif !dodging: 
+		velocity.y += gravity * delta
 	
 	if dodging:
 		velocity.x = dodge_direction.x * dodge_speed
@@ -101,11 +109,18 @@ func handle_movement_and_animation(delta):
 		"move_left", "move_right", "aim_up", "aim_down"
 		)
 	
+	
+	if jump_count >= max_jumps:
+		can_jump = false
+	else: 
+		can_jump = true
+	
 	# Decide State
 	if is_stunned:
 		state = PlayerState.STUNNED
-	elif Input.is_action_just_pressed("jump") and (is_on_floor() or is_on_wall()):
+	elif Input.is_action_just_pressed("jump") and can_jump:
 		state = PlayerState.JUMPING
+		jump_count += 1
 	elif Input.is_action_just_pressed("dodge") and can_dodge:
 		state = PlayerState.DODGING
 	elif Input.is_action_just_pressed("dash") and can_dash:
@@ -121,12 +136,14 @@ func handle_movement_and_animation(delta):
 	match state:
 		PlayerState.IDLE:
 			anim_sprite.play("idle")
+			jump_count = 0
 			if dash_cd_timer.is_stopped() and (is_on_floor() or is_on_wall()):
 				can_dash = true
 			if dodge_timer.is_stopped() and (is_on_floor() or is_on_wall()):
 				can_dodge = true
 				dodge_count = 0
 		PlayerState.WALKING:
+			jump_count = 0
 			anim_sprite.play("run")
 			if dash_cd_timer.is_stopped() and (is_on_floor() or is_on_wall()):
 				can_dash = true
@@ -138,6 +155,8 @@ func handle_movement_and_animation(delta):
 			velocity.y = jump_velocity
 		PlayerState.FALLING:
 			anim_sprite.play("falling")
+			if is_on_floor() or is_on_wall():
+				jump_count = 0
 			if dash_cd_timer.is_stopped() and (is_on_floor() or is_on_wall()):
 				can_dash = true
 			if dodge_timer.is_stopped() and (is_on_floor() or is_on_wall()):
@@ -149,7 +168,8 @@ func handle_movement_and_animation(delta):
 			start_dodge()
 		PlayerState.DASHING:
 			anim_sprite.play("dash")
-			dash_direction = aerial_direction
+			if !dashing:
+				dash_direction = aerial_direction
 			start_dash()
 		PlayerState.STUNNED:
 			anim_sprite.play("stunned")
@@ -165,6 +185,7 @@ func handle_movement_and_animation(delta):
 			anim_sprite.flip_h = true
 		else:
 			anim_sprite.flip_h = false
+	
 func stun_knockback():
 	if anim_sprite.flip_h:
 		velocity.x = KNOCKBACK_POWER
@@ -184,7 +205,7 @@ func start_dodge():
 		if velocity.y > 0:
 			velocity.y = 0.0
 	
-func set_shader_value(value: float):
+func set_shader_value(value: float): #for tween used in dodge
 	material.set_shader_parameter("aspect_ratio", value)
 	
 func start_dash():
@@ -195,7 +216,7 @@ func start_dash():
 		dash_timer.start(dash_time)
 		dash_cd_timer.start(dash_cooldown)
 		ghost_timer.start(.05)
-		add_ghost()
+		add_ghost.rpc()
 
 @rpc("any_peer", "call_local", "reliable")
 func add_ghost():
@@ -207,7 +228,7 @@ func add_ghost():
 
 func get_stunned():
 	is_stunned = true
-	hurtbox.monitorable = false
+	hurtbox.set_deferred("monitorable", false)
 	stun_knockback()
 	stun_timer.start(STUN_TIME)
 
@@ -228,17 +249,17 @@ func _on_ghost_timer_timeout() -> void:
 
 func _on_stun_timer_timeout() -> void:
 	is_stunned = false
-	hurtbox.monitorable = true
+	hurtbox.set_deferred("monitorable", true)
 
 func _on_dash_attack_area_entered(area: Area2D) -> void:
-	if area.is_in_group("player_hurtbox") and area != self.hurtbox:
+	if area.is_in_group("player_hurtbox") and area != hurtbox:
 		area.get_parent().get_stunned()
 	
 
 func _on_dodge_timer_timeout() -> void:
 	dodging = false
 	hurtbox.monitorable = true
-	scale = Vector2(1,1)
+	scale = Vector2(1.25,1.25)
 	set_shader_value(1.0)
 	if dodge_count < max_dodges:
 		can_dodge = true
